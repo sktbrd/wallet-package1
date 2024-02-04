@@ -148,6 +148,8 @@ export const useTransfer = () => {
             const paths = getPaths([networkId]);
             assert(paths.length > 0, "No available paths for transfer");
 
+            console.log(paths);
+
             // Simulated transfer logic
             console.log(`Transferred ${amount} of ${asset} to ${destination}`);
         } catch (e: any) {
