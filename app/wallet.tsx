@@ -8,9 +8,9 @@ import { initWallet, useTransfer } from "./hooks/useWallet"; // Corrected import
 export default function Wallet() {
     const [asset, setAsset] = useState<string>("");
     const [amount, setAmount] = useState<string>("");
+    const [keepkey, setKeepkey] = useState<any>(null);
     const [destination, setDestination] = useState<string>(""); // Add destination state if required
     const { transfer, isTransferring, error } = useTransfer(); // Corrected to useTransfer
-
     ///useEff
     // start the context provider
     useEffect(() => {
@@ -21,13 +21,16 @@ export default function Wallet() {
         e.preventDefault();
         if (!asset || !amount) return;
         // Assume destination is required and add a field for it in your form.
-        await transfer(asset, amount, destination); // Adjusted to include destination
+        //if ETH do keepkey.[ETH].transfer
+        //await transfer(asset, amount, destination); // Adjusted to include destination
     };
 
     useEffect(() => {
         const init = async () => {
             try {
-                await initWallet();
+                let keepkey = await initWallet();
+                console.log("keepkey: ", keepkey);
+                setKeepkey(keepkey);
             } catch (error) {
                 console.error("Failed to initialize wallet", error);
             }
