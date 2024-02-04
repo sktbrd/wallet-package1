@@ -9,9 +9,9 @@ export default function Wallet() {
     const [asset, setAsset] = useState<string>("");
     const [amount, setAmount] = useState<string>("");
     const [keepkey, setKeepkey] = useState<any>(null);
+    const [walletAddress, setWalletAddress] = useState<string | null>(null); // Add wallet address state
     const [destination, setDestination] = useState<string>(""); // Add destination state if required
     const { transfer, isTransferring, error } = useTransfer(); // Corrected to useTransfer
-    ///useEff
     // start the context provider
     useEffect(() => {
         initWallet()
@@ -19,61 +19,70 @@ export default function Wallet() {
 
     const handleTransfer = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!asset || !amount) return;
-        // Assume destination is required and add a field for it in your form.
-        //if ETH do keepkey.[ETH].transfer
-        useTransfer(keepkey, asset, amount, destination); // Adjusted to include destination
-        //await transfer(asset, amount, destination); // Adjusted to include destination
+        if (!asset || !amount || !destination) return;
+
+        await transfer(keepkey, asset, amount, destination);
     };
+
 
     useEffect(() => {
         const init = async () => {
             try {
                 let keepkey = await initWallet();
-                console.log("keepkey: ", keepkey);
                 setKeepkey(keepkey);
+                // Assuming you want the address for the ETH wallet
+                if (keepkey && keepkey.ETH.address) {
+                    const walletData = await keepkey.ETH.walletMethods.getAddress();
+                    console.log("walletData: ", walletData);
+                    setWalletAddress(walletData); // Set the fetched wallet address
+                    console.log("walletAddress: ", walletAddress);
+                }
             } catch (error) {
                 console.error("Failed to initialize wallet", error);
             }
         };
         init();
-    }
-        , []);
+    }, []);
 
     return (
-        <form className="formulary" onSubmit={handleTransfer}>
-            <select style={{ color: "black" }} value={asset} onChange={(e) => setAsset(e.target.value)}>
-                <option value="">Select Asset</option>
-                <option value="BTC">Bitcoin</option>
-                <option value="ETH">Ethereum</option>
-                {/* Add more assets as needed */}
-            </select>
+        <div>
+            {/* Display wallet address if available */}
 
-            <div style={{ color: "black" }}>
-                <input
-                    type="text"
-                    placeholder="Amount"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                />
-            </div>
-            <br />
-            <div style={{ color: "black" }}>
-                <input
-                    type="text"
-                    placeholder="Destination Address"
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                />
-            </div>
+            <p>Wallet Address: {walletAddress}</p>
 
-            <button className="sendButton" type="submit" disabled={isTransferring}
-                onClick={handleTransfer}>
-                {isTransferring ? "Transferring..." : "Transfer"}
-            </button>
-            {error && <p>Error: {error}</p>}
+            <form className="formulary" onSubmit={handleTransfer}>
+                <select style={{ color: "black" }} value={asset} onChange={(e) => setAsset(e.target.value)}>
+                    <option value="">Select Asset</option>
+                    <option value="BTC">Bitcoin</option>
+                    <option value="ETH">Ethereum</option>
+                    {/* Add more assets as needed */}
+                </select>
 
-        </form>
+                <div style={{ color: "black" }}>
+                    <input
+                        type="text"
+                        placeholder="Amount"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                    />
+                </div>
+                <br />
+                <div style={{ color: "black" }}>
+                    <input
+                        type="text"
+                        placeholder="Destination Address"
+                        value={destination}
+                        onChange={(e) => setDestination(e.target.value)}
+                    />
+                </div>
 
+                <button className="sendButton" type="submit" disabled={isTransferring}
+                    onClick={handleTransfer}>
+                    {isTransferring ? "Transferring..." : "Transfer"}
+                </button>
+                {error && <p>Error: {error}</p>}
+
+            </form>
+        </div>
     );
 }

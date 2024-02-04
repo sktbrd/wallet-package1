@@ -14,30 +14,33 @@ interface KeepKeyWallet {
     wallet: any;
     status: string;
     isConnected: boolean;
+    ETH: any;
 }
+const getWalletBalances = async (walletMethods: any, pubkeys: any) => {
+    const balancePromises = pubkeys.map((pubkey: any) => walletMethods.getBalance([{ pubkey }]));
+    const balances = await Promise.all(balancePromises);
+    return balances.map(balance => Number(balance[0].toFixed(balance[0].decimal)) || 0);
+};
 
-const getWalletByChain = async (keepkey:any, chain:any) => {
+const getWalletByChain = async (keepkey: any, chain: any) => {
     if (!keepkey[chain]) return null;
 
     const walletMethods = keepkey[chain].walletMethods;
     const address = await walletMethods.getAddress();
+    console.log("address: ", address);
     if (!address) return null;
 
     let balance = [];
     if (walletMethods.getPubkeys) {
         const pubkeys = await walletMethods.getPubkeys();
-        for (const pubkey of pubkeys) {
-            const pubkeyBalance = await walletMethods.getBalance([{ pubkey }]);
-            balance.push(Number(pubkeyBalance[0].toFixed(pubkeyBalance[0].decimal)) || 0);
-        }
-        balance = [{ total: balance.reduce((a, b) => a + b, 0), address }];
+        const balances = await getWalletBalances(walletMethods, pubkeys);
+        balance = [{ total: balances.reduce((a, b) => a + b, 0), address }];
     } else {
-        balance = await walletMethods.getBalance([{address}]);
+        balance = await walletMethods.getBalance([{ address }]);
     }
 
     return { address, balance };
 };
-
 
 export const initWallet = async (): Promise<KeepKeyWallet> => {
     try {
@@ -58,6 +61,7 @@ export const initWallet = async (): Promise<KeepKeyWallet> => {
             wallet: keepkeyWallet,
             status: 'offline',
             isConnected: false,
+            ETH: null,
         };
 
         const allByCaip = chains.map((chainStr) => {
@@ -69,7 +73,7 @@ export const initWallet = async (): Promise<KeepKeyWallet> => {
         });
         const paths = getPaths(allByCaip);
         console.log('paths: ', paths);
-        let keepkey:any = {};
+        let keepkey: any = {};
         // @ts-ignore
         // Implement the addChain function with additional logging
         function addChain({ chain, walletMethods, wallet }) {
@@ -95,14 +99,13 @@ export const initWallet = async (): Promise<KeepKeyWallet> => {
         let utxoApiKey = 'B_s9XK926uwmQSGTDEcZB3vSAmt5t2'
         let input = {
             apis: {},
-            rpcUrls:{},
+            rpcUrls: {},
             addChain,
             config: { keepkeyConfig, covalentApiKey, ethplorerApiKey, utxoApiKey },
         }
-        
-        // Step 1: Invoke the outer function with the input object
-        const connectFunction = walletKeepKey.wallet.connect(input);
 
+        // Step 1: Invoke the outer function with the input object
+        const connectFunction = walletKeepKey.wallet.connect(input)
         // Step 2: Invoke the inner function with chains and paths
         let kkApikey = await connectFunction(chains, paths);
         console.log("kkApikey: ", kkApikey);
@@ -110,15 +113,16 @@ export const initWallet = async (): Promise<KeepKeyWallet> => {
         //walletKeepKey
         // console.log("walletKeepKey: ",walletKeepKey.wallet)
         // console.log("connectFunction: ",connectFunction)
-        console.log("keepkey: ",keepkey)
+        console.log("keepkey: ", keepkey)
 
         //got balances
-        for(let i = 0; i < chains.length; i++) {
+        for (let i = 0; i < chains.length; i++) {
             let chain = chains[i]
-            let walletData:any = await getWalletByChain(keepkey, chain);
-            console.log(chain+ " walletData: ",walletData)
+            let walletData: any = await getWalletByChain(keepkey, chain);
+            console.log(chain + " walletData: ", walletData)
             // keepkey[chain].wallet.address = walletData.address
             keepkey[chain].wallet.balances = walletData.balance
+            console.log(chain + " walletData: ", keepkey[chain].wallet)
         }
 
         // Additional setup or connection logic here
@@ -134,25 +138,36 @@ export const useTransfer = () => {
     const [isTransferring, setIsTransferring] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Assuming setIsTransferring and setError are useState hooks from the component
+
+    const validateTransferDetails = (keepkey: any, asset: string, amount: string, destination: string) => {
+        if (!keepkey) return 'Wallet not initialized';
+        if (!asset || !amount || !destination) return 'Invalid transfer details';
+        // Additional validation logic can be added here
+        return '';
+    };
+
     const transfer = async (keepkey: any, asset: string, amount: string, destination: string) => {
+        const validationError = validateTransferDetails(keepkey, asset, amount, destination);
+        if (validationError) {
+            setError(validationError);
+            setIsTransferring(false);
+            return;
+        }
+
         setIsTransferring(true);
-        setError(null);
+        setError(null); // Reset any previous error
 
         try {
-            const assetString = `${asset}.${asset}`;
-            const assetValue = AssetValue.fromStringSync(assetString, parseFloat(amount));
-            log.info("assetValue: ",assetValue)
-            //send
-            let sendPayload = {
+            const assetValue = AssetValue.fromStringSync(`${asset}.${asset}`, parseFloat(amount));
+            const sendPayload = {
                 assetValue,
-                memo: '',
+                memo: '', // Consider if memo needs to be dynamic or configurable
                 recipient: destination,
-            }
-            log.info("sendPayload: ",sendPayload)
+            };
+
             const txHash = await keepkey.transfer(sendPayload);
-            console.log(`Transaction hash: ${txHash}`);
-            // Simulated transfer logic
-            console.log(`Transferred ${amount} of ${asset} to ${destination}`);
+            // Optionally, handle the success case, e.g., update UI or state to reflect the successful transfer
         } catch (e: any) {
             setError(e.message || "An error occurred during the transfer.");
         } finally {
