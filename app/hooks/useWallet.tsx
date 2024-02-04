@@ -94,7 +94,7 @@ export const initWallet = async (): Promise<KeepKeyWallet> => {
         let ethplorerApiKey = 'freekey'
         let utxoApiKey = 'B_s9XK926uwmQSGTDEcZB3vSAmt5t2'
         let input = {
-            apis: { },
+            apis: {},
             rpcUrls:{},
             addChain,
             config: { keepkeyConfig, covalentApiKey, ethplorerApiKey, utxoApiKey },
@@ -123,7 +123,7 @@ export const initWallet = async (): Promise<KeepKeyWallet> => {
 
         // Additional setup or connection logic here
 
-        return walletKeepKey;
+        return keepkey;
     } catch (error) {
         console.error(error);
         throw new Error('Failed to initialize wallet');

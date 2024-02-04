@@ -5,7 +5,6 @@ import Wallet from './wallet'; // Import the Wallet component you created
 export default function Home() {
 
     return (
-
         <Wallet />
     );
 }
