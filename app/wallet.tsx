@@ -10,6 +10,10 @@ export default function Wallet() {
     const { transfer, isTransferring, error } = useTransfer(); // Corrected to useTransfer
 
     ///useEff
+    // start the context provider
+    useEffect(() => {
+        initWallet()
+    }, []);
 
     const handleTransfer = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,7 +50,7 @@ export default function Wallet() {
             </div>
 
             <button className="sendButton" type="submit" disabled={isTransferring}
-                onClick={useTransfer}>
+                onClick={handleTransfer}>
                 {isTransferring ? "Transferring..." : "Transfer"}
             </button>
             {error && <p>Error: {error}</p>}
