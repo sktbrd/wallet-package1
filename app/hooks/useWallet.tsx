@@ -118,7 +118,7 @@ export const initWallet = async (): Promise<KeepKeyWallet> => {
             let walletData:any = await getWalletByChain(keepkey, chain);
             console.log(chain+ " walletData: ",walletData)
             // keepkey[chain].wallet.address = walletData.address
-            // keepkey[chain].wallet.balances = walletData.balance
+            keepkey[chain].wallet.balances = walletData.balance
         }
 
         // Additional setup or connection logic here
@@ -134,22 +134,23 @@ export const useTransfer = () => {
     const [isTransferring, setIsTransferring] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const transfer = async (asset: string, amount: string, destination: string) => {
+    const transfer = async (keepkey: any, asset: string, amount: string, destination: string) => {
         setIsTransferring(true);
         setError(null);
 
         try {
-            const chain = getChainEnumValue(asset);
-            assert(chain, "Invalid asset type");
-
-            const networkId = ChainToNetworkId[chain];
-            assert(networkId, "Unsupported chain for transfer");
-
-            const paths = getPaths([networkId]);
-            assert(paths.length > 0, "No available paths for transfer");
-
-            console.log(paths);
-
+            const assetString = `${asset}.${asset}`;
+            const assetValue = AssetValue.fromStringSync(assetString, parseFloat(amount));
+            log.info("assetValue: ",assetValue)
+            //send
+            let sendPayload = {
+                assetValue,
+                memo: '',
+                recipient: destination,
+            }
+            log.info("sendPayload: ",sendPayload)
+            const txHash = await keepkey.transfer(sendPayload);
+            console.log(`Transaction hash: ${txHash}`);
             // Simulated transfer logic
             console.log(`Transferred ${amount} of ${asset} to ${destination}`);
         } catch (e: any) {

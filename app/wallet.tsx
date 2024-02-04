@@ -22,6 +22,7 @@ export default function Wallet() {
         if (!asset || !amount) return;
         // Assume destination is required and add a field for it in your form.
         //if ETH do keepkey.[ETH].transfer
+        useTransfer(keepkey, asset, amount, destination); // Adjusted to include destination
         //await transfer(asset, amount, destination); // Adjusted to include destination
     };
 
