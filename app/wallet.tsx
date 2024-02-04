@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import { initWallet, useTransfer } from "./hooks/useWallet"; // Corrected import to use the new hook
-
 export default function Wallet() {
     const [asset, setAsset] = useState<string>("");
     const [amount, setAmount] = useState<string>("");
@@ -18,29 +17,39 @@ export default function Wallet() {
     };
 
     return (
-        <form onSubmit={handleTransfer}>
-            <select value={asset} onChange={(e) => setAsset(e.target.value)}>
+        <form className="formulary" onSubmit={handleTransfer}>
+            <select style={{ color: "black" }} value={asset} onChange={(e) => setAsset(e.target.value)}>
                 <option value="">Select Asset</option>
                 <option value="BTC">Bitcoin</option>
                 <option value="ETH">Ethereum</option>
                 {/* Add more assets as needed */}
             </select>
-            <input
-                type="text"
-                placeholder="Amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-            />
-            <input
-                type="text"
-                placeholder="Destination Address"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)} // Add input for destination
-            />
-            <button type="submit" disabled={isTransferring}>
+
+            <div style={{ color: "black" }}>
+                <input
+                    type="text"
+                    placeholder="Amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                />
+            </div>
+            <br />
+            <div style={{ color: "black" }}>
+                <input
+                    type="text"
+                    placeholder="Destination Address"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                />
+            </div>
+
+            <button className="sendButton" type="submit" disabled={isTransferring}
+                onClick={useTransfer}>
                 {isTransferring ? "Transferring..." : "Transfer"}
             </button>
             {error && <p>Error: {error}</p>}
+
         </form>
+
     );
 }

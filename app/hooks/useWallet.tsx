@@ -1,6 +1,8 @@
 // hooks/useCryptoTransfer.ts
 import { useState, useEffect } from 'react';
+//@ts-ignore
 import { getPaths } from '@pioneer-platform/pioneer-coins';
+//@ts-ignore
 import { ChainToNetworkId, getChainEnumValue, availableChainsByWallet, WalletOption } from '@coinmasters/types';
 import { AssetValue } from '@coinmasters/core';
 import assert from 'assert';
@@ -27,7 +29,13 @@ export const initWallet = async (): Promise<KeepKeyWallet> => {
             isConnected: false,
         };
 
-        const allByCaip = chains.map((chainStr) => ChainToNetworkId[getChainEnumValue(chainStr)]);
+        const allByCaip = chains.map((chainStr) => {
+            const chain = getChainEnumValue(chainStr);
+            if (chain) {
+                return ChainToNetworkId[chain];
+            }
+            return undefined;
+        });
         const paths = getPaths(allByCaip);
         console.log('paths: ', paths);
 
