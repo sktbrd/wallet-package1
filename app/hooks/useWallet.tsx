@@ -82,7 +82,7 @@ export const initWallet = async (): Promise<KeepKeyWallet> => {
         }
 
         let keepkeyConfig = {
-            apiKey: 'f74b46ad-592b-4a9a-9941-c99624fefb62',
+            apiKey: localStorage.getItem('keepkeyApiKey') || '123',
             pairingInfo: {
                 name: "int-test-package",
                 imageUrl: "",
@@ -106,7 +106,7 @@ export const initWallet = async (): Promise<KeepKeyWallet> => {
         // Step 2: Invoke the inner function with chains and paths
         let kkApikey = await connectFunction(chains, paths);
         console.log("kkApikey: ", kkApikey);
-
+        localStorage.setItem('keepkeyApiKey', kkApikey);
         //walletKeepKey
         // console.log("walletKeepKey: ",walletKeepKey.wallet)
         // console.log("connectFunction: ",connectFunction)
