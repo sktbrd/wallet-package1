@@ -9,6 +9,8 @@ export default function Wallet() {
     const [destination, setDestination] = useState<string>(""); // Add destination state if required
     const { transfer, isTransferring, error } = useTransfer(); // Corrected to useTransfer
 
+    ///useEff
+
     const handleTransfer = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!asset || !amount) return;
