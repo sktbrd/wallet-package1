@@ -3,6 +3,8 @@
 
 import { useState, useEffect } from "react";
 import { initWallet, useTransfer } from "./hooks/useWallet"; // Corrected import to use the new hook
+
+
 export default function Wallet() {
     const [asset, setAsset] = useState<string>("");
     const [amount, setAmount] = useState<string>("");
@@ -15,6 +17,18 @@ export default function Wallet() {
         // Assume destination is required and add a field for it in your form.
         await transfer(asset, amount, destination); // Adjusted to include destination
     };
+
+    useEffect(() => {
+        const init = async () => {
+            try {
+                await initWallet();
+            } catch (error) {
+                console.error("Failed to initialize wallet", error);
+            }
+        };
+        init();
+    }
+        , []);
 
     return (
         <form className="formulary" onSubmit={handleTransfer}>
@@ -44,7 +58,7 @@ export default function Wallet() {
             </div>
 
             <button className="sendButton" type="submit" disabled={isTransferring}
-                onClick={useTransfer}>
+                onClick={handleTransfer}>
                 {isTransferring ? "Transferring..." : "Transfer"}
             </button>
             {error && <p>Error: {error}</p>}
